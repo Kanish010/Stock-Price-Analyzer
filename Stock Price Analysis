@@ -1,0 +1,139 @@
+import yfinance as yf 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+
+#Fetches historical stock data
+def historicalstockdata(stock, duration):
+    stock = yf.Ticker(stock)
+    historical_data = stock.history(duration)
+    return historical_data
+
+#Plots a graph for stock prices with optional analysis
+def plotdata(data, stock, regressionline, analysistype):
+    plt.figure(figsize=(10, 5))
+    plt.plot(data["Close"], label= f"{stock} Closing Price", color = "purple")
+
+    if analysistype == 1:  
+        plt.plot(data.index, regressionline, color ="orange", linestyle ="--", label ="Regression Line")    #Regression Analysis
+    elif analysistype == 2:  
+        plt.plot(ma["SMA_WS"], label ="SMA", linestyle ="--", color ="green")     #Simple Moving Average
+    elif analysistype == 3:  
+        plt.plot (ema, label ="EMA", linestyle ="--", color ="yellow")      #Exponential Moving Average
+    elif analysistype == 4:   
+        avgprice = data["Close"].mean ()
+        plt.axhline(y =avgprice, color ="red", label ="Average Price", linestyle = "--")   #Avg Price 
+
+    plt.title(f"{stock} Stock Prices - {duration}")
+    plt.xlabel("Date")
+    plt.ylabel("Closing Price (USD)")
+    plt.legend(), plt.grid(), plt.show()
+
+#Regresion calculations on stock closing prices
+def regression (data):
+    x = np.arange(len(data))
+    y = data["Close"].values
+    coefficients = np.polyfit(x, y, 1)
+    bestfit = np.poly1d(coefficients)
+    regressionline = bestfit(x)
+    return regressionline
+
+#Simple Moving Average calculations on stock closing prices
+def smovingaverage (data, WS):
+    ma = pd.DataFrame (data ["Close"])
+    ma['SMA_WS'] = ma['Close'].rolling(window=WS).mean()   #WS = Window Size 
+    return ma
+
+#Exponential Moving Average calculations on stock closing prices
+def emovingaverage (data, alpha):
+    ema = data["Close"].ewm(alpha=alpha, adjust=False).mean()
+    return ema
+
+#Gives option to download stock data into an excel file
+def exceldownload (data, stock):
+    while True:
+        downloadchoice = input(f"Do you want to save {stock}'s data as an Excel file? (yes/no): ").lower ()
+        if downloadchoice == "yes":
+            folder = input ("Which folder do you want to download the file too? ").upper ()
+            filename = (f"{folder}/{stock} stock data.xlsx")
+            data.to_excel(filename, index=False)
+            print(f"Data saved as {stock} stock data.xlsx to {folder}")
+            break
+        elif downloadchoice == "no":
+            break
+        else:
+            print ("Invalid input, try again (yes/no): ")
+
+while True: #Ensures only an integer is accepted
+    try:
+        numstock = int (input ("How many stocks prices do you want to see? "))
+        break
+    except ValueError:
+        print ("Invalid input, try again: ")
+
+while True: #Ensures valid duration is entered 
+    duration = input ("How many days/months/years of data would you like to see (mo/y)? ").lower()
+    if duration[0].isdigit () is True and duration.endswith (("mo", "y")):   #Makes sure input starts with an integer and ends with accepted chars
+        break
+    elif duration[0].isdigit () is True and duration.endswith (("d")):
+        print ("Only months and years are accepted, try again: ") 
+    else:
+        print ("Invalid input, try again (mo/y): ")
+
+for j in range (numstock): #Checks if stock ticker is valid
+    while True:
+        stock = input ("Which stocks data do you want to see? ").upper ()
+        historical_data = historicalstockdata(stock, duration)
+        if not historical_data.empty:
+            break
+        else:
+            print("Invalid stock ticker, please choose again ")
+
+#Loop prompts user to choose a valid analysis option
+while True:
+    while True:  #Ensures only valid options are chosen
+        try:
+            analysistype = int(input("Which of the following analysis do you want to see?\n"
+                             "1. Regression Line\n"
+                             "2. Simple Moving Average\n"
+                             "3. Exponential Moving Average\n"
+                             "4. Average Stock Price\n"
+                             "5. None\n"
+                             "Enter the corresponding number: "))
+            break
+        except ValueError:
+            print ("Invalid input, try again: ")
+
+    if analysistype in [1, 2, 3, 4, 5]:
+        break
+    else:
+        print ("Invalid choice, please choose again: ")
+
+for k in range (numstock):  #Checks if SMA and EMA values are valid 
+    if analysistype == 2: 
+        while True:  #Ensures only integers greater than or equal to 0 are accepted
+            try:
+                WS = int(input("Choose window size: "))    
+                if WS <= 0:
+                    print ("Window size needs to be greater than 0, choose again: ")
+                else:
+                    ma = smovingaverage (historical_data, WS)
+                    break
+            except ValueError:
+                print ("Invalid input, please enter a integer greater than 0: ")
+
+    if analysistype == 3:
+            while True:  #Ensures alpha value is within acceptable range (between 0 and 1 inclusive)
+                try:
+                    alphavalue = float(input("Enter the alpha value for EMA: "))
+                    if 0 <= alphavalue <= 1:
+                        ema = emovingaverage(historical_data, alphavalue)
+                        break
+                    else:
+                        print ("Alpha needs to be between 0 and 1, choose again: ")
+                except ValueError:
+                    print ("Invalid input, please enter a number between 0 and 1: ")
+
+    regressionline = regression (historical_data)
+    exceldownload (historical_data, stock)
+    plotdata(historical_data, stock, regressionline, analysistype)
