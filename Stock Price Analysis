@@ -2,6 +2,7 @@ import yfinance as yf
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import os 
 
 #Fetches historical stock data
 def historicalstockdata(stock, duration):
@@ -50,19 +51,19 @@ def emovingaverage (data, alpha):
     return ema
 
 #Gives option to download stock data into an excel file
-def exceldownload (data, stock):
+def exceldownload(data, stock):
     while True:
-        downloadchoice = input(f"Do you want to save {stock}'s data as an Excel file? (yes/no): ").lower ()
+        downloadchoice = input(f"Do you want to save {stock}'s data as an Excel file? (yes/no): ").lower()
         if downloadchoice == "yes":
-            folder = input ("Which folder do you want to download the file too? ").upper ()
-            filename = (f"{folder}/{stock} stock data.xlsx")
+            desktop_path = os.path.join(os.path.join(os.path.expanduser('~')), 'Desktop')
+            filename = os.path.join(desktop_path, f"{stock}_stock_data.xlsx")
             data.to_excel(filename, index=False)
-            print(f"Data saved as {stock} stock data.xlsx to {folder}")
+            print(f"Data saved as {stock} stock data.xlsx to desktop")
             break
         elif downloadchoice == "no":
             break
         else:
-            print ("Invalid input, try again (yes/no): ")
+            print("Invalid input, try again (yes/no): ")
 
 while True: #Ensures only an integer is accepted
     try:
