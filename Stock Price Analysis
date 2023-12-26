@@ -65,7 +65,6 @@ def exceldownload(data, stock):
         else:
             print("Invalid input, try again (yes/no): ")
 
-
 historical_data_list = []  # List to store historical data for each stock
 
 while True:  # Ensures only an integer is accepted
