@@ -1,4 +1,4 @@
-import yfinance as yf
+ import yfinance as yf
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -75,7 +75,7 @@ while True:  # Ensures only an integer is accepted
         print("Invalid input, try again: ")
 
 while True:  # Ensures valid duration is entered
-    duration = input("How many days/months/years of data would you like to see (mo/y)? ").lower()
+    duration = input("How many months/years of data would you like to see (mo/y)? ").lower()
     if duration[0].isdigit() and duration.endswith(("mo", "y")):
         break
     elif duration[0].isdigit() and duration.endswith(("d")):
